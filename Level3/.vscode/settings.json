@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/hagit/Desktop/Ex3_os/Level3",
+            "binaryPath": "/home/hagit/Desktop/Ex3_os/Level3/kosaraju_interactive",
+            "binaryArgs": []
+        }
+    ]
+}
