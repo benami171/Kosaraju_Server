@@ -4,7 +4,7 @@
 #include <list>
 using namespace std;
 
-void dfs1(int v, vector<vector<bool>>& adj, vector<bool>& visited, stack<int>& Stack) {
+void dfs1(int v, vector<vector<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
     visited[v] = true;
     for (size_t u = 1; u < adj[v].size(); ++u) { // size_t for comparison with adj[v].size()
         if (adj[v][u] && !visited[u]) {
@@ -14,7 +14,7 @@ void dfs1(int v, vector<vector<bool>>& adj, vector<bool>& visited, stack<int>& S
     Stack.push(v);
 }
 
-void dfs2_matrix(int v, vector<vector<bool>>& adj, vector<bool>& visited, list<int>& component) {
+void dfs2_matrix(int v, vector<vector<int>>& adj, vector<bool>& visited, list<int>& component) {
     visited[v] = true;
     component.push_back(v);
     for (size_t u = 1; u < adj[v].size(); ++u) { // size_t for comparison with adj[v].size()
@@ -24,7 +24,7 @@ void dfs2_matrix(int v, vector<vector<bool>>& adj, vector<bool>& visited, list<i
     }
 }
 
-void kosaraju_matrix(int n, vector<vector<bool>>& adj) {
+void kosaraju_matrix(int n, vector<vector<int>>& adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -34,11 +34,11 @@ void kosaraju_matrix(int n, vector<vector<bool>>& adj) {
         }
     }
 
-    vector<vector<bool>> adjRev(n + 1, vector<bool>(n + 1, false));
+    vector<vector<int>> adjRev(n + 1,vector<int>(n+1,0));
     for (int v = 1; v <= n; ++v) {
         for (int u = 1; u <= n; ++u) {
             if (adj[v][u]) {
-                adjRev[u][v] = true;
+                adjRev[u][v] = 1;
             }
         }
     }
@@ -62,11 +62,11 @@ void kosaraju_matrix(int n, vector<vector<bool>>& adj) {
 int main() {
     int n, m;
     cin >> n >> m;
-    vector<vector<bool>> adj(n + 1, vector<bool>(n + 1, false));
+    vector<vector<int>> adj(n + 1, vector<int>(n + 1, 0));
     for (int i = 0; i < m; ++i) {
         int u, v;
         cin >> u >> v;
-        adj[u][v] = true;
+        adj[u][v] = 1;
     }
 
     kosaraju_matrix(n, adj);

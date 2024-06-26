@@ -5,5 +5,8 @@
             "binaryPath": "/home/hagit/Desktop/Ex3_os/Level3/kosaraju_interactive",
             "binaryArgs": []
         }
-    ]
+    ],
+    "files.associations": {
+        "iostream": "cpp"
+    }
 }

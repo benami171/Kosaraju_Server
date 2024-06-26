@@ -4,7 +4,7 @@
 #include <list>
 using namespace std;
 
-void dfs1(int v, vector<vector<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
+void dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
     visited[v] = true;
     for (int u : adj[v]) {
         if (!visited[u]) {
@@ -14,7 +14,7 @@ void dfs1(int v, vector<vector<int>>& adj, vector<bool>& visited, stack<int>& St
     Stack.push(v);
 }
 
-void dfs2_list(int v, vector<vector<int>>& adj, vector<bool>& visited, list<int>& component) {
+void dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& component) {
     visited[v] = true;
     component.push_back(v);
     for (int u : adj[v]) {
@@ -24,7 +24,7 @@ void dfs2_list(int v, vector<vector<int>>& adj, vector<bool>& visited, list<int>
     }
 }
 
-void kosaraju_list(int n, vector<vector<int>>& adj) {
+void kosaraju_list(int n, vector<list<int>>& adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -34,7 +34,7 @@ void kosaraju_list(int n, vector<vector<int>>& adj) {
         }
     }
 
-    vector<vector<int>> adjRev(n + 1);
+    vector<list<int>> adjRev(n + 1);
     for (int v = 1; v <= n; ++v) {
         for (int u : adj[v]) {
             adjRev[u].push_back(v);
@@ -60,7 +60,7 @@ void kosaraju_list(int n, vector<vector<int>>& adj) {
 int main() {
     int n, m;
     cin >> n >> m;
-    vector<vector<int>> adj(n + 1);
+    vector<list<int>> adj(n + 1);
     for (int i = 0; i < m; ++i) {
         int u, v;
         cin >> u >> v;

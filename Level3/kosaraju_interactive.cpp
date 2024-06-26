@@ -5,7 +5,7 @@
 #include <algorithm>
 using namespace std;
 
-void dfs1(int v, vector<vector<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
+void dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
     visited[v] = true;
     for (int u : adj[v]) {
         if (!visited[u]) {
@@ -15,7 +15,7 @@ void dfs1(int v, vector<vector<int>>& adj, vector<bool>& visited, stack<int>& St
     Stack.push(v);
 }
 
-void dfs2_list(int v, vector<vector<int>>& adj, vector<bool>& visited, list<int>& component) {
+void dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& component) {
     visited[v] = true;
     component.push_back(v);
     for (int u : adj[v]) {
@@ -25,7 +25,7 @@ void dfs2_list(int v, vector<vector<int>>& adj, vector<bool>& visited, list<int>
     }
 }
 
-void kosaraju_list(int n, vector<vector<int>>& adj) {
+void kosaraju_list(int n, vector<list<int>>& adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -35,7 +35,7 @@ void kosaraju_list(int n, vector<vector<int>>& adj) {
         }
     }
 
-    vector<vector<int>> adjRev(n + 1);
+    vector<list<int>> adjRev(n + 1);
     for (int v = 1; v <= n; ++v) {
         for (int u : adj[v]) {
             adjRev[u].push_back(v);
@@ -61,16 +61,16 @@ void kosaraju_list(int n, vector<vector<int>>& adj) {
 int main() {
     string command;
     int n = 0, m = 0;
-    vector<vector<int>> adj;
+    vector<list<int>> adj;
 
     while (cin >> command) {
         if (command == "Newgraph") {
             cin >> n >> m;
-            adj.assign(n + 1, vector<int>());
+            adj.assign(n + 1, list<int>());
             for (int i = 0; i < m; ++i) {
                 int u, v;
                 cin >> u >> v;
-                adj[u].push_back(v);  // Adjusted index to 0-based
+                adj[u].push_back(v);
             }
         } 
         else if (command == "Kosaraju") {
@@ -90,7 +90,7 @@ int main() {
                 adj[u].erase(it);
             }
         }
-        else exit(1);
+        else cout << "Unknown command: " << command << endl;
     }
 
     return 0;

@@ -21,22 +21,20 @@ using namespace std;
 #define PORT "9034"  // Port we're listening on
 
 // Global graph data structure
-vector<vector<int>> adj;
+vector<list<int>> adj;
 
-void createNewGraph(vector<vector<int>> &adj1){
+void createNewGraph(vector<list<int>>  &adj1){
     int n,m;
     cin >> n >> m;
-        // adj1.resize(n + 1);
-        adj1.assign(n + 1, vector<int>());
-        for (int i = 0; i < m; ++i) {
-            int u, v;
-            cin >> u >> v;
-            adj1[u].push_back(v);
-        }
-            cout << "Graph updated with " << n << " nodes and " << m << " edges." << endl;
+    adj.assign(n + 1, list<int>());
+    for (int i = 0; i < m; ++i) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+    }
+    cout << "Graph updated with " << n << " nodes and " << m << " edges." << endl;
 } 
-
-void dfs1(int v, vector<vector<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
+void dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
     visited[v] = true;
     for (int u : adj[v]) {
         if (!visited[u]) {
@@ -46,7 +44,7 @@ void dfs1(int v, vector<vector<int>>& adj, vector<bool>& visited, stack<int>& St
     Stack.push(v);
 }
 
-void dfs2_list(int v, vector<vector<int>>& adj, vector<bool>& visited, list<int>& component) {
+void dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& component) {
     visited[v] = true;
     component.push_back(v);
     for (int u : adj[v]) {
@@ -56,19 +54,19 @@ void dfs2_list(int v, vector<vector<int>>& adj, vector<bool>& visited, list<int>
     }
 }
 
-void kosaraju_list(int n,vector<vector<int>>&adj1) {
+void kosaraju_list(int n, vector<list<int>>& adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
     for (int i = 1; i <= n; ++i) {
         if (!visited[i]) {
-            dfs1(i, adj1, visited, Stack);
+            dfs1(i, adj, visited, Stack);
         }
     }
 
-    vector<vector<int>> adjRev(n + 1);
+    vector<list<int>> adjRev(n + 1);
     for (int v = 1; v <= n; ++v) {
-        for (int u : adj1[v]) {
+        for (int u : adj[v]) {
             adjRev[u].push_back(v);
         }
     }
@@ -77,6 +75,7 @@ void kosaraju_list(int n,vector<vector<int>>&adj1) {
     while (!Stack.empty()) {
         int v = Stack.top();
         Stack.pop();
+
         if (!visited[v]) {
             list<int> component;
             dfs2_list(v, adjRev, visited, component);
@@ -259,7 +258,7 @@ int main(void) {
                         // Use dup2 to redirect stdin to the client's socket
                         if (dup2(client_fd, STDIN_FILENO) == -1) {
                             perror("dup2");
-                            //close(client_fd);
+                            close(client_fd);
                             continue;
                         }
                         handle_client_command(command);
