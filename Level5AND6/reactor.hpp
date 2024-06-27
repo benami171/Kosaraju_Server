@@ -13,9 +13,9 @@ public:
     Reactor();
     ~Reactor();
     void* startReactor();
-    int stopReactor(void * reactor);
-    int addFdToReactor(void * reactor, int fd, reactorFunc func);
-    int removeFdFromReactor(void * reactor, int fd);
+    int stopReactor();
+    int addFdToReactor(int fd, reactorFunc func);
+    int removeFdFromReactor( int fd);
 
 private:
     int fd_count;

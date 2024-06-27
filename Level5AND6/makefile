@@ -8,7 +8,7 @@ CFLAGS = -std=c++11 -Wall -g
 LIBS = -lpthread
 
 # Source files
-SRCS = multipleUsers.cpp Reactor.cpp
+SRCS = multipleUsers.cpp reactor.cpp
 
 # Header files
 HEADERS = reactor.hpp

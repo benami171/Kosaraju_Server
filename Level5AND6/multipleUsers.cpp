@@ -161,7 +161,7 @@ void * handle_new_connection(int listener_fd) {
                      get_in_addr((struct sockaddr*)&remoteaddr),
                      remoteIP, INET6_ADDRSTRLEN), newfd);
     
-    reactor.addFdToReactor(&reactor, newfd,handle_client_command);
+    reactor.addFdToReactor(newfd,handle_client_command);
 }
 
 int get_listener_socket() {
@@ -216,8 +216,6 @@ int get_listener_socket() {
 }
 
 int main(void) {
-    
-
     int listener = get_listener_socket();
     if (listener == -1) {
         fprintf(stderr, "error getting listening socket\n");
@@ -225,7 +223,7 @@ int main(void) {
     }
 
     // Add the listener to the reactor
-    reactor.addFdToReactor(&reactor, listener, handle_new_connection);
+    reactor.addFdToReactor(listener, handle_new_connection);
 
     // Start the reactor
     reactor.startReactor();

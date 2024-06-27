@@ -47,21 +47,21 @@ void* Reactor::startReactor() {
     return nullptr;  // Return nullptr to match the void* return type
 }
 
-int Reactor::stopReactor(void* rec) {
+int Reactor::stopReactor() {
     running = false;
     return 0;
 }
 
-int Reactor::addFdToReactor(void* reactor, int newFd, reactorFunc func) {
-    Reactor* r = static_cast<Reactor*>(reactor);
-    if (r->fd_count == r->fd_size) {
-        r->fd_size *= 2;
-        r->pfds = (struct pollfd*)realloc(r->pfds, sizeof(*r->pfds) * r->fd_size);
+int Reactor::addFdToReactor( int newFd, reactorFunc func) {
+    //Reactor* r = static_cast<Reactor*>(reactor);
+    if (this->fd_count == this->fd_size) {
+        this->fd_size *= 2;
+        this->pfds = (struct pollfd*)realloc(this->pfds, sizeof(*this->pfds) * this->fd_size);
     }
-    r->pfds[r->fd_count].fd = newFd;
-    r->pfds[r->fd_count].events = POLLIN;
-    r->fdMap[newFd] = func;
-    r->fd_count++;
+    this->pfds[this->fd_count].fd = newFd;
+    this->pfds[this->fd_count].events = POLLIN;
+    this->fdMap[newFd] = func;
+    this->fd_count++;
     return 0;
 }
 
@@ -70,13 +70,13 @@ int Reactor::addFdToReactor(void* reactor, int newFd, reactorFunc func) {
 // if we find the fd, we replace it with the last element in the array and decrement the fd_count.
 // we then remove the fd from the fdMap and return 0.
 
-int Reactor::removeFdFromReactor(void* reactor, int fd) {
-    Reactor* r = static_cast<Reactor*>(reactor);
-    for (int i = 0; i < r->fd_count; i++) {
-        if (r->pfds[i].fd == fd) {
-            r->pfds[i] = r->pfds[r->fd_count - 1];
-            r->fd_count--;
-            r->fdMap.erase(fd);
+int Reactor::removeFdFromReactor(int fd) {
+    //Reactor* r = static_cast<Reactor*>(reactor);
+    for (int i = 0; i < this->fd_count; i++) {
+        if (this->pfds[i].fd == fd) {
+            this->pfds[i] = this->pfds[this->fd_count - 1];
+            this->fd_count--;
+            this->fdMap.erase(fd);
             return 0;
         }
     }
