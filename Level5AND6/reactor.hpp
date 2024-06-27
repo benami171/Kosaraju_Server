@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 typedef void * (* reactorFunc) (int fd);
-typedef reactor;
+//typedef reactor;
 class Reactor {
 public:
     Reactor();

@@ -22,6 +22,7 @@ using namespace std;
 
 #define PORT "9034"  // Port we're listening on
 
+Reactor reactor;
 // Global graph data structure
 vector<list<int>> adj;
 
@@ -90,8 +91,7 @@ void kosaraju_list(int n, vector<list<int>>& adj) {
     }
 }
 
-
-void handle_client_command(int client_fd) {
+void* handle_client_command(int client_fd) {
     char buf[256];
     int nbytes = recv(client_fd, buf, sizeof(buf), 0);
     if (nbytes <= 0) {
@@ -109,7 +109,7 @@ void handle_client_command(int client_fd) {
         if (dup2(client_fd, STDIN_FILENO) == -1) {
             perror("dup2");
             close(client_fd);
-            return;
+            return nullptr;
         }
         if (command == "Newgraph\n") {
             createNewGraph(adj);
@@ -137,13 +137,15 @@ void handle_client_command(int client_fd) {
         }
     }
 }
-void *get_in_addr(struct sockaddr *sa) {
+
+void * get_in_addr(struct sockaddr *sa) {
     if (sa->sa_family == AF_INET) {
         return &(((struct sockaddr_in*)sa)->sin_addr);
     }
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
-void handle_new_connection(int listener_fd, Reactor* reactor) {
+
+void * handle_new_connection(int listener_fd) {
     struct sockaddr_storage remoteaddr;
     socklen_t addrlen = sizeof(remoteaddr);
     char remoteIP[INET6_ADDRSTRLEN];
@@ -151,7 +153,7 @@ void handle_new_connection(int listener_fd, Reactor* reactor) {
     int newfd = accept(listener_fd, (struct sockaddr*)&remoteaddr, &addrlen);
     if (newfd == -1) {
         perror("accept");
-        return;
+        return nullptr;
     }
     
     printf("pollserver: new connection from %s on socket %d\n",
@@ -159,7 +161,7 @@ void handle_new_connection(int listener_fd, Reactor* reactor) {
                      get_in_addr((struct sockaddr*)&remoteaddr),
                      remoteIP, INET6_ADDRSTRLEN), newfd);
     
-    reactor->addFdToReactor(reactor, newfd, &handle_client_command(newfd));
+    reactor.addFdToReactor(&reactor, newfd,handle_client_command);
 }
 
 int get_listener_socket() {
@@ -214,7 +216,7 @@ int get_listener_socket() {
 }
 
 int main(void) {
-    Reactor reactor;
+    
 
     int listener = get_listener_socket();
     if (listener == -1) {
@@ -223,7 +225,7 @@ int main(void) {
     }
 
     // Add the listener to the reactor
-    reactor.addFdToReactor(&reactor, listener,  &handle_new_connection(listener));
+    reactor.addFdToReactor(&reactor, listener, handle_new_connection);
 
     // Start the reactor
     reactor.startReactor();
