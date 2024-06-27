@@ -3,28 +3,26 @@
 
 #include <vector>
 #include <functional>
+#include <iostream>
+#include <unordered_map>
 
+typedef void * (* reactorFunc) (int fd);
+typedef reactor;
 class Reactor {
 public:
     Reactor();
     ~Reactor();
-
-    bool start();
-    bool stop();
-    bool addFd(int fd, short events);
-    bool removeFd(int fd);
-    void setHandler(std::function<void(int)> handler);
-    void handleEvents();
+    void* startReactor();
+    int stopReactor(void * reactor);
+    int addFdToReactor(void * reactor, int fd, reactorFunc func);
+    int removeFdFromReactor(void * reactor, int fd);
 
 private:
-    struct EventData {
-        int fd;
-        short events;
-    };
-
-    int epoll_fd;
-    std::function<void(int)> event_handler;
-    std::vector<EventData> event_data;
+    int fd_count;
+    int fd_size;
+    bool running;
+    struct pollfd *pfds;
+    std::unordered_map<int,reactorFunc> fdMap;
 };
 
 #endif // REACTOR_HPP
