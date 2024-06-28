@@ -1,28 +1,40 @@
-#ifndef REACTOR_HPP
-#define REACTOR_HPP
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <poll.h>
+#include <map>
+#include "kosaraju.hpp"
+#define PORT 9034
+#pragma once
 
-#include <vector>
-#include <functional>
-#include <iostream>
-#include <unordered_map>
 
-typedef void * (* reactorFunc) (int fd);
-//typedef reactor;
+using namespace std;
+
 class Reactor {
-public:
-    Reactor();
-    ~Reactor();
-    void* startReactor();
-    int stopReactor();
-    int addFdToReactor(int fd, reactorFunc func);
-    int removeFdFromReactor( int fd);
-
-private:
-    int fd_count;
-    int fd_size;
-    bool running;
+    // Shared Graph
+    vector<list<int>> adj;
+    // Poll list
     struct pollfd *pfds;
-    std::unordered_map<int,reactorFunc> fdMap;
-};
+    // Current fds in pfds
+    int fd_count;
+    // Size of max fds to insert
+    int fd_size;
+    // run poll loop
+    bool run;
+    typedef void * (*reactorFunc) (Reactor* reactor,int fd);
+    // map fds->function
+    map<int,reactorFunc > function_map;
 
-#endif // REACTOR_HPP
+public:
+
+    Reactor();
+    void* startReactor() ;
+    int addFdToReactor(int fd, reactorFunc func);
+    int removeFdFromReactor(int fd);
+    int stopReactor();
+     static void *handle_client(Reactor* reactor,int fd) ;
+    static void* handle_connection(Reactor* reactor,int fd);
+};

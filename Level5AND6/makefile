@@ -8,10 +8,10 @@ CFLAGS = -std=c++11 -Wall -g
 LIBS = -lpthread
 
 # Source files
-SRCS = multipleUsers.cpp reactor.cpp
+SRCS = multipleUsers.cpp reactor.cpp kosaraju.cpp
 
 # Header files
-HEADERS = reactor.hpp
+HEADERS = reactor.hpp kosaraju.hpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)

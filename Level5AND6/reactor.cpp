@@ -1,84 +1,107 @@
 #include "reactor.hpp"
-#include <poll.h>
-#include <sys/epoll.h>
-#include <unistd.h>
 
-#include <iostream>
 
 Reactor::Reactor() {
-    running = false;
+    // initialize pfds to 5 spots
     fd_size = 5;
     fd_count = 0;
-    pfds = (struct pollfd*)malloc(sizeof *pfds * fd_size);
-    if(!pfds) {
-        std::cerr << "Failed to allocate memory for pollfd array" << std::endl;
-        exit(EXIT_FAILURE);
+    // create
+    pfds = (struct pollfd *) malloc(sizeof *(pfds) * fd_size);
+    if (!pfds) {
+        perror("poll");
+        exit(1);
     }
+    run = true;
 }
 
-Reactor::~Reactor() {
-    free(pfds);
-}
-
-void* Reactor::startReactor() {
-    running = true;
-    int poll_count; // Number of events that have occurred
-    while (running) {
-        // Wait for events on the file descriptors.
-        poll_count = poll(pfds, fd_count, -1);  // -1 means wait indefinitely
+void *Reactor::startReactor() {
+    while (run) {
+        // poll wait
+        int poll_count = poll(pfds, fd_count, -1);
         if (poll_count == -1) {
             perror("poll");
-            running = false;  // Stop the reactor on error
-            break;
+            exit(1);
         }
-
-        // Handle events
-        for (int i = 0; i < fd_count && poll_count > 0; ++i) { // as long as there are events to process
-            if (pfds[i].revents & POLLIN) {  // Check if read event
-                auto it = fdMap.find(pfds[i].fd);
-                if (it != fdMap.end()) {
-                    // Call the associated function
-                    it->second(pfds[i].fd);
-                }
-                --poll_count;  // Decrement the count of remaining events to process
+        for (int i = 0; i < fd_count; i++) {
+            // if got hot fds -> run its function
+            if (pfds[i].revents & POLLIN) {
+                function_map[pfds[i].fd](this,pfds[i].fd);
             }
         }
     }
-    return nullptr;  // Return nullptr to match the void* return type
 }
 
-int Reactor::stopReactor() {
-    running = false;
+int Reactor::stopReactor()  {
+    // stop the run
+    run = false;
+    // free the poll list
+    free(pfds);
     return 0;
 }
 
-int Reactor::addFdToReactor( int newFd, reactorFunc func) {
-    //Reactor* r = static_cast<Reactor*>(reactor);
-    if (this->fd_count == this->fd_size) {
-        this->fd_size *= 2;
-        this->pfds = (struct pollfd*)realloc(this->pfds, sizeof(*this->pfds) * this->fd_size);
+int Reactor::addFdToReactor(int fd, Reactor::reactorFunc func) {
+    // if no room realloc the list
+    if (fd_count == fd_size) {
+        fd_size *= 2;
+        pfds = (struct pollfd *) realloc(pfds, sizeof(*pfds) * fd_size);
     }
-    this->pfds[this->fd_count].fd = newFd;
-    this->pfds[this->fd_count].events = POLLIN;
-    this->fdMap[newFd] = func;
-    this->fd_count++;
+    // put fds in next availabe space and update on map
+    pfds[fd_count].fd = fd;
+    pfds[fd_count].events = POLLIN;
+    function_map[fd] = func;
+    fd_count++;
     return 0;
 }
-
-// casting the void pointer to a reactor pointer so we can access the members of the reactor class.
-// we then iterate through the pfds array to find the fd that we want to remove from the reactor.
-// if we find the fd, we replace it with the last element in the array and decrement the fd_count.
-// we then remove the fd from the fdMap and return 0.
 
 int Reactor::removeFdFromReactor(int fd) {
-    //Reactor* r = static_cast<Reactor*>(reactor);
-    for (int i = 0; i < this->fd_count; i++) {
-        if (this->pfds[i].fd == fd) {
-            this->pfds[i] = this->pfds[this->fd_count - 1];
-            this->fd_count--;
-            this->fdMap.erase(fd);
+    // search for fds in poll list and remove from map
+    for (int i = 0; i < fd_count; i++) {
+        if (pfds[i].fd == fd) {
+            pfds[i] = pfds[fd_count - 1];
+            fd_count--;
+            function_map.erase(fd);
+            close(fd);
             return 0;
         }
     }
     return -1;
+}
+
+void *Reactor::handle_client(Reactor *reactor, int fd) {
+    char buf[256];
+    // receive messge from fd
+    int nbytes = recv(fd, buf, sizeof buf, 0);
+    if (nbytes < 0) {
+        perror("recv");
+    } else if (nbytes == 0) {
+        // if closed remove it from reactor
+        reactor->removeFdFromReactor(fd);
+    } else {
+        // if has data send it to client handler, dup std in and out to client
+        // so every message from him goes to function and from function to him
+        buf[nbytes] = '\0';
+        string command(buf);
+        int res = dup2(fd, STDIN_FILENO);
+        int res1 = dup2(fd, STDOUT_FILENO);
+        if (res == -1 || res1 == -1) {
+            perror("dup2");
+            close(fd);
+        }
+        kosaraju::handle_client_command(reactor->adj, command);
+    }
+    return nullptr;
+}
+
+void *Reactor::handle_connection(Reactor *reactor, int fd)  {
+    // get connection and add to poll list
+    struct sockaddr_in client_address;
+    socklen_t clientAddressLen = sizeof(client_address);
+    memset(&client_address, 0, sizeof(client_address));
+    clientAddressLen = sizeof(client_address);
+    int client_fd = accept(fd, (struct sockaddr *) &client_address, &clientAddressLen);
+    if (client_fd == -1) {
+        perror("accept");
+    } else {
+        reactor->addFdToReactor(client_fd, handle_client);
+    }
 }
