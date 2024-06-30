@@ -11,7 +11,7 @@ LIBS = -lpthread
 SRCS = main.cpp kosaraju.cpp
 
 # Header files
-HEADERS = Reactor.hpp kosaraju.hpp
+HEADERS = Proactor.hpp Reactor.hpp kosaraju.hpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
