@@ -2,10 +2,12 @@
 
 void kosaraju::createNewGraph(vector<list<int>> &  adj){
     int n,m;
+    cout << "define graph" <<endl;
     cin >> n >> m;
     adj.assign(n + 1, list<int>());
     for (int i = 0; i < m; ++i) {
         int u, v;
+        cout << "addEdge" <<endl;
         cin >> u >> v;
         adj[u].push_back(v);
     }
@@ -67,6 +69,7 @@ void kosaraju::kosaraju_list(int n, vector<list<int>> & adj) {
 
 void kosaraju::handle_client_command(vector<list<int>> & adj,string command) {
     if (command == "Newgraph\n") {
+        cout << "Creating new graph" <<endl;
         createNewGraph(adj);
     } else if (command == "Kosaraju\n") {
         int n = adj.size() - 1;

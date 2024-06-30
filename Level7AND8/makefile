@@ -8,16 +8,16 @@ CFLAGS = -std=c++11 -Wall -g
 LIBS = -lpthread
 
 # Source files
-SRCS = multipleUsers.cpp reactor.cpp kosaraju.cpp
+SRCS = main.cpp kosaraju.cpp
 
 # Header files
-HEADERS = reactor.hpp kosaraju.hpp
+HEADERS = Proactor.hpp Reactor.hpp kosaraju.hpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
 
 # Executable name
-EXEC = multipleUsers
+EXEC = main
 
 # Build target
 all: $(EXEC)

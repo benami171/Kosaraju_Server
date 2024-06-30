@@ -7,6 +7,7 @@
 using namespace std;
 
 namespace kosaraju {
+
     void createNewGraph(vector<list<int>> &adj);
 
     void dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack);
