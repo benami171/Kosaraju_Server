@@ -3,7 +3,10 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <condition_variable>
 #include <mutex>
+#include <thread>
 
 #include "Proactor.hpp"
 #include "Reactor.hpp"
@@ -12,7 +15,7 @@
 // The Graph that the Reactor holds
 vector<list<int>> adj;
 pthread_mutex_t my_mutex;
-vector<pthread_t> thread = {};
+vector<pthread_t> threads = {};
 
 int get_listener_socket(void) {
     int listeningSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -101,14 +104,14 @@ void* handle_connection(int fd) {
     }
     cout << "Client connected, Fd: " << client_fd << endl;
     pthread_t id = startProactor(client_fd, handle_client);
-    thread.push_back(id);
+    threads.push_back(id);
     cout << "Create new Thread for Fd: " << client_fd << endl;
     return new int(client_fd);
 }
 
 int main() {
-
-
+    std::thread signalThread(kosaraju::waitForAbove50Signal);
+    std::thread signalThread2(kosaraju::waitForBelow50Signal);
     pthread_mutex_init(&my_mutex, NULL);  // Initialize the mutex
 
     int listener = get_listener_socket();
@@ -135,18 +138,11 @@ int main() {
                     free(fds);
                     if (res == -1) {
                         continue;
-                    } else {
-                        //                        addFdToReactor(reactor,res, handle_client);
                     }
                 }
-                //                else{
-                //                    void* ret = reactor->f2f[i].func(hot_fd);
-                //                    if(*(int*)ret == -1) {
-                //                        removeFdFromReactor(reactor, hot_fd);
-                //                    }
-                //
-                //                }
             }
         }
+        signalThread.join();
+        signalThread2.join();
     }
 }

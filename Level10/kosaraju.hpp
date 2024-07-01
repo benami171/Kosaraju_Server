@@ -7,6 +7,12 @@
 using namespace std;
 
 namespace kosaraju {
+        
+    void waitForAbove50Signal();
+
+    void waitForBelow50Signal();
+
+    // void waitForSignal() ;
 
     void createNewGraph(vector<list<int>> &adj);
 
