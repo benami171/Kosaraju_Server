@@ -29,18 +29,20 @@ void kosaraju::waitForAbove50Signal() {
     }
 }
 
-void kosaraju::createNewGraph(vector<list<int>>& adj) {
+string kosaraju::createNewGraph(vector<list<int>>& adj) {
+    string ans;
     int n, m;
-    cout << "define graph" << endl;
+    ans += "define graph\n";
     cin >> n >> m;
     adj.assign(n + 1, list<int>());
     for (int i = 0; i < m; ++i) {
         int u, v;
-        cout << "addEdge" << endl;
+        ans += "addEdge\n" ;
         cin >> u >> v;
         adj[u].push_back(v);
     }
-    cout << "Graph updated with " << n << " nodes and " << m << " edges." << endl;
+    ans += "Graph updated with " +to_string(n)+ " nodes and " + to_string(m) + " edges.\n";
+    return ans;
 }
 
 void kosaraju::dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
@@ -63,7 +65,8 @@ void kosaraju::dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, l
     }
 }
 
-void kosaraju::kosaraju_list(int n, vector<list<int>>& adj) {
+string kosaraju::kosaraju_list(int n, vector<list<int>>& adj) {
+    string ans;
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -96,9 +99,9 @@ void kosaraju::kosaraju_list(int n, vector<list<int>>& adj) {
                 cv_above50.notify_one();              // Signal the above 50% condition variable
             }
             for (int u : component) {
-                cout << u << " ";
+             ans += to_string(u) +  " ";
             }
-            cout << endl;
+            ans += "\n";
         }
     }
     if (!above50) {
@@ -106,20 +109,23 @@ void kosaraju::kosaraju_list(int n, vector<list<int>>& adj) {
         above50_ready = false;                // Reset the condition for above 50%
         cv_above50.notify_one();              // Signal the above 50% condition variable}
     }
+
+    return ans;
 }
 
-void kosaraju::handle_client_command(vector<list<int>>& adj, string command) {
+string kosaraju::handle_client_command(vector<list<int>>& adj, string command) {
+    string ans;
     if (command == "Newgraph\n") {
-        cout << "Creating new graph" << endl;
-        createNewGraph(adj);
+        ans += "Creating new graph\n";
+        ans += createNewGraph(adj);
     } else if (command == "Kosaraju\n") {
         int n = adj.size() - 1;
-        kosaraju_list(n, adj);
+        ans = kosaraju_list(n, adj);
     } else if (command == "Newedge\n") {
         int u, v;
         cin >> u >> v;
         adj[u].push_back(v);
-        cout << "New edge added between " << u << " and " << v << endl;
+        ans += "New edge added between " + to_string(u) + " and " +  to_string(v) + "\n" ;
         fflush(stdout);
     } else if (command == "Removeedge\n") {
         int u, v;
@@ -127,11 +133,12 @@ void kosaraju::handle_client_command(vector<list<int>>& adj, string command) {
         auto it = find(adj[u].begin(), adj[u].end(), v);
         if (it != adj[u].end()) {
             adj[u].erase(it);
-            cout << "Edge removed between " << u << " and " << v << endl;
+            ans += "Edge removed between " +  to_string(u) + " and " +  to_string(v) + "\n";
             fflush(stdout);
         }
     } else {
         cout << "Unknown command: " << command << endl;
         fflush(stdout);
     }
+    return ans;
 }
