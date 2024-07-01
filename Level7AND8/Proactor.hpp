@@ -1,4 +1,3 @@
-#include <pthread.h>
 #include <map>
 #include <poll.h>
 #include <unistd.h>
@@ -8,6 +7,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <iostream>
+#include <pthread.h>
+#include <signal.h>
 
 using namespace std;
 

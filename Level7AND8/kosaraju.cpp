@@ -1,4 +1,5 @@
 #include "kosaraju.hpp"
+#include <algorithm>
 
 void kosaraju::createNewGraph(vector<list<int>> &  adj){
     int n,m;

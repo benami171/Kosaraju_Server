@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <mutex>
+#include <string.h>
 
 
 // The Graph that the Reactor holds
@@ -78,7 +79,9 @@ void* handle_client(int fd) {
             pthread_mutex_unlock(&my_mutex); // Unlock the mutex after access
             cout << "On Thread: "<< fd<< " UnLocked: Mutex Unlocked" << endl;
         }
+
     }
+    return nullptr;
 }
 
 /**
