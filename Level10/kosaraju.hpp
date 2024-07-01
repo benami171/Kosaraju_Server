@@ -10,10 +10,6 @@ namespace kosaraju {
         
     void waitForAbove50Signal();
 
-    void waitForBelow50Signal();
-
-    // void waitForSignal() ;
-
     void createNewGraph(vector<list<int>> &adj);
 
     void dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack);

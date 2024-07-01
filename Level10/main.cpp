@@ -111,7 +111,6 @@ void* handle_connection(int fd) {
 
 int main() {
     std::thread signalThread(kosaraju::waitForAbove50Signal);
-    std::thread signalThread2(kosaraju::waitForBelow50Signal);
     pthread_mutex_init(&my_mutex, NULL);  // Initialize the mutex
 
     int listener = get_listener_socket();
@@ -142,7 +141,5 @@ int main() {
                 }
             }
         }
-        signalThread.join();
-        signalThread2.join();
     }
 }

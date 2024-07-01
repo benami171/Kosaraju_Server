@@ -1,50 +1,49 @@
 #include "kosaraju.hpp"
+
+#include <stdio.h>
+
 #include <algorithm>
-#include <mutex>
 #include <condition_variable>
+#include <iostream>
+#include <mutex>
 #include <thread>
 
 using namespace std;
 
-mutex mtx; // Global mutex for synchronization
-condition_variable cv_above50; // Condition variable for above 50%
-condition_variable cv_below50; // Condition variable for below 50%
-bool above50_ready = false; // Condition flag for above 50%
-bool below50_ready = false; // Condition flag for below 50%
+mutex mtx;                      // Global mutex for synchronization
+condition_variable cv_above50;  // Condition variable for above 50%
+bool above50_ready = false;     // Condition flag for above 50%
 
 void kosaraju::waitForAbove50Signal() {
-    while(true) {
     unique_lock<std::mutex> lck(mtx);
-    cv_above50.wait(lck, []{return above50_ready;});
-    cout << "At Least '50%' of the graph belongs to the same SCC\n" << std::endl;
-    above50_ready = false; // Reset the condition
+    cv_above50.wait(lck, [] { return above50_ready; });
+    while (true) {
+        if (above50_ready) {
+            cout << "At Least '50%' of the graph belongs to the same SCC\n"
+                 << std::endl;
+        } else {
+            cout << "Not At Least '50%' of the graph belongs to the same SCC\n"
+                 << std::endl;
+        }
+        cv_above50.wait(lck);
     }
 }
 
-void kosaraju::waitForBelow50Signal() {
-    while(true){
-    unique_lock<std::mutex> lck(mtx);
-    cv_below50.wait(lck, []{return below50_ready;});
-    cout << "Not Least '50%' of the graph no longer belongs to the same SCC\n" << endl;
-    below50_ready = false; // Reset the condition
-    }
-}
-
-void kosaraju::createNewGraph(vector<list<int>> &  adj){
-    int n,m;
-    cout << "define graph" <<endl;
+void kosaraju::createNewGraph(vector<list<int>>& adj) {
+    int n, m;
+    cout << "define graph" << endl;
     cin >> n >> m;
     adj.assign(n + 1, list<int>());
     for (int i = 0; i < m; ++i) {
         int u, v;
-        cout << "addEdge" <<endl;
+        cout << "addEdge" << endl;
         cin >> u >> v;
         adj[u].push_back(v);
     }
     cout << "Graph updated with " << n << " nodes and " << m << " edges." << endl;
 }
 
-void kosaraju::dfs1(int v, vector<list<int>> & adj, vector<bool>& visited, stack<int>& Stack) {
+void kosaraju::dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
     visited[v] = true;
     for (int u : adj[v]) {
         if (!visited[u]) {
@@ -54,7 +53,7 @@ void kosaraju::dfs1(int v, vector<list<int>> & adj, vector<bool>& visited, stack
     Stack.push(v);
 }
 
-void kosaraju::dfs2_list(int v, vector<list<int>> & adj, vector<bool>& visited, list<int>& component) {
+void kosaraju::dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& component) {
     visited[v] = true;
     component.push_back(v);
     for (int u : adj[v]) {
@@ -64,7 +63,7 @@ void kosaraju::dfs2_list(int v, vector<list<int>> & adj, vector<bool>& visited, 
     }
 }
 
-void kosaraju::kosaraju_list(int n, vector<list<int>> & adj) {
+void kosaraju::kosaraju_list(int n, vector<list<int>>& adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -92,10 +91,9 @@ void kosaraju::kosaraju_list(int n, vector<list<int>> & adj) {
             dfs2_list(v, adjRev, visited, component);
             if (component.size() >= (size_t)n / 2 && !above50) {
                 above50 = true;
-                std::lock_guard<std::mutex> lk(mtx); // Lock the mutex
-                above50_ready = true; // Set the condition for above 50%
-                below50_ready = false; // Reset the condition for below 50%
-                cv_above50.notify_one(); // Signal the above 50% condition variable
+                std::lock_guard<std::mutex> lk(mtx);  // Lock the mutex
+                above50_ready = true;                 // Set the condition for above 50%
+                cv_above50.notify_one();              // Signal the above 50% condition variable
             }
             for (int u : component) {
                 cout << u << " ";
@@ -104,16 +102,15 @@ void kosaraju::kosaraju_list(int n, vector<list<int>> & adj) {
         }
     }
     if (!above50) {
-        std::lock_guard<std::mutex> lk(mtx); // Lock the mutex
-        above50_ready = false; // Reset the condition for above 50%
-        below50_ready = true; // Set the condition for below 50%
-        cv_below50.notify_one(); // Signal the below 50% condition variable
+        std::lock_guard<std::mutex> lk(mtx);  // Lock the mutex
+        above50_ready = false;                // Reset the condition for above 50%
+        cv_above50.notify_one();              // Signal the above 50% condition variable}
     }
 }
 
-void kosaraju::handle_client_command(vector<list<int>> & adj,string command) {
+void kosaraju::handle_client_command(vector<list<int>>& adj, string command) {
     if (command == "Newgraph\n") {
-        cout << "Creating new graph" <<endl;
+        cout << "Creating new graph" << endl;
         createNewGraph(adj);
     } else if (command == "Kosaraju\n") {
         int n = adj.size() - 1;
@@ -138,4 +135,3 @@ void kosaraju::handle_client_command(vector<list<int>> & adj,string command) {
         fflush(stdout);
     }
 }
-

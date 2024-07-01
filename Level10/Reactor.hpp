@@ -111,5 +111,9 @@ int removeFdFromReactor(Reactor* r,int fd) {
     return -1;
 }
 
+void notifyAll(string output,int listener_fd){
+    
+}
+
 
 
