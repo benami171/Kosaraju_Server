@@ -10,23 +10,24 @@
 
 using namespace std;
 
-mutex mtx;                      // Global mutex for synchronization
-condition_variable cv_above50;  // Condition variable for above 50%
-bool above50_ready = false;     // Condition flag for above 50%
+pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;       // Global mutex for synchronization
+pthread_cond_t cv_above50 = PTHREAD_COND_INITIALIZER;  // Condition variable for above 50%
+bool current_above50_state = false;
+
 
 void kosaraju::waitForAbove50Signal() {
-    unique_lock<std::mutex> lck(mtx);
-    cv_above50.wait(lck, [] { return above50_ready; });
+    pthread_mutex_lock(&mtx);
     while (true) {
-        if (above50_ready) {
+        pthread_cond_wait(&cv_above50, &mtx);
+        if (current_above50_state) {
             cout << "At Least '50%' of the graph belongs to the same SCC\n"
-                 << std::endl;
+                 << endl;
         } else {
-            cout << "Not At Least '50%' of the graph belongs to the same SCC\n"
-                 << std::endl;
+            cout << "At Least '50%' of the graph does not belongs to the same SCC\n"
+                 << endl;
         }
-        cv_above50.wait(lck);
     }
+    pthread_mutex_unlock(&mtx);
 }
 
 string kosaraju::createNewGraph(vector<list<int>>& adj) {
@@ -37,11 +38,11 @@ string kosaraju::createNewGraph(vector<list<int>>& adj) {
     adj.assign(n + 1, list<int>());
     for (int i = 0; i < m; ++i) {
         int u, v;
-        ans += "addEdge\n" ;
+        ans += "addEdge\n";
         cin >> u >> v;
         adj[u].push_back(v);
     }
-    ans += "Graph updated with " +to_string(n)+ " nodes and " + to_string(m) + " edges.\n";
+    ans += "Graph updated with " + to_string(n) + " nodes and " + to_string(m) + " edges.\n";
     return ans;
 }
 
@@ -84,7 +85,7 @@ string kosaraju::kosaraju_list(int n, vector<list<int>>& adj) {
     }
 
     fill(visited.begin(), visited.end(), false);
-    bool above50 = false;
+    int max_scc_size = 0;
     while (!Stack.empty()) {
         int v = Stack.top();
         Stack.pop();
@@ -92,23 +93,21 @@ string kosaraju::kosaraju_list(int n, vector<list<int>>& adj) {
         if (!visited[v]) {
             list<int> component;
             dfs2_list(v, adjRev, visited, component);
-            if (component.size() >= (size_t)n / 2 && !above50) {
-                above50 = true;
-                std::lock_guard<std::mutex> lk(mtx);  // Lock the mutex
-                above50_ready = true;                 // Set the condition for above 50%
-                cv_above50.notify_one();              // Signal the above 50% condition variable
-            }
+            max_scc_size = max(max_scc_size, static_cast<int>(component.size())); // Getting the highest component size out of all the components.
             for (int u : component) {
-             ans += to_string(u) +  " ";
+                ans += to_string(u) + " ";
             }
             ans += "\n";
         }
     }
-    if (!above50) {
-        std::lock_guard<std::mutex> lk(mtx);  // Lock the mutex
-        above50_ready = false;                // Reset the condition for above 50%
-        cv_above50.notify_one();              // Signal the above 50% condition variable}
+    bool new_above50_state = (max_scc_size >= n/2); // If there is a scc component with size above 50% or not.
+
+    pthread_mutex_lock(&mtx);
+    if (new_above50_state != current_above50_state) { // If there was a change in the graph state from the last time Kosaraju was called
+        current_above50_state = new_above50_state; 
+        pthread_cond_signal(&cv_above50);
     }
+    pthread_mutex_unlock(&mtx);
 
     return ans;
 }
@@ -125,7 +124,7 @@ string kosaraju::handle_client_command(vector<list<int>>& adj, string command) {
         int u, v;
         cin >> u >> v;
         adj[u].push_back(v);
-        ans += "New edge added between " + to_string(u) + " and " +  to_string(v) + "\n" ;
+        ans += "New edge added between " + to_string(u) + " and " + to_string(v) + "\n";
         fflush(stdout);
     } else if (command == "Removeedge\n") {
         int u, v;
@@ -133,7 +132,7 @@ string kosaraju::handle_client_command(vector<list<int>>& adj, string command) {
         auto it = find(adj[u].begin(), adj[u].end(), v);
         if (it != adj[u].end()) {
             adj[u].erase(it);
-            ans += "Edge removed between " +  to_string(u) + " and " +  to_string(v) + "\n";
+            ans += "Edge removed between " + to_string(u) + " and " + to_string(v) + "\n";
             fflush(stdout);
         }
     } else {

@@ -80,7 +80,6 @@ void* handle_client(int fd) {
             cout << "On Thread: " << fd << " Locked: Mutex Locked" << endl;
             string ans = kosaraju::handle_client_command(adj, command);
             send(fd, ans.c_str(), ans.size(), 0);
-            //buf[0] = '\0';
             pthread_mutex_unlock(&my_mutex);  // Unlock the mutex after access
             cout << "On Thread: " << fd << " UnLocked: Mutex Unlocked" << endl;
         }
