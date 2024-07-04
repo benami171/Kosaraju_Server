@@ -45,7 +45,6 @@ pthread_t startProactor(int sockfd, proactorFunc threadFunc) {
         free(data);
         return (pthread_t) 0;  // Return an invalid thread ID on error
     }
-
     return thread;
 }
 
