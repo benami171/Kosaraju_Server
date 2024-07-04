@@ -1,20 +1,20 @@
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <poll.h>
-#include <vector>
-#include <stack>
-#include <list>
+#include <sys/types.h>
+#include <unistd.h>
 #include <algorithm>
 #include <iostream>
-#include <sstream>
+#include <list>
 #include <map>
+#include <sstream>
+#include <stack>
+#include <vector>
 
 using namespace std;
 
@@ -23,8 +23,8 @@ using namespace std;
 // Global graph data structure
 vector<list<int>> adj;
 
-void createNewGraph(vector<list<int>>  &adj1){
-    int n,m;
+void createNewGraph(vector<list<int>> &adj1) {
+    int n, m;
     cin >> n >> m;
     adj.assign(n + 1, list<int>());
     for (int i = 0; i < m; ++i) {
@@ -33,8 +33,8 @@ void createNewGraph(vector<list<int>>  &adj1){
         adj[u].push_back(v);
     }
     cout << "Graph updated with " << n << " nodes and " << m << " edges." << endl;
-} 
-void dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
+}
+void dfs1(int v, vector<list<int>> &adj, vector<bool> &visited, stack<int> &Stack) {
     visited[v] = true;
     for (int u : adj[v]) {
         if (!visited[u]) {
@@ -44,7 +44,7 @@ void dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stac
     Stack.push(v);
 }
 
-void dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& component) {
+void dfs2_list(int v, vector<list<int>> &adj, vector<bool> &visited, list<int> &component) {
     visited[v] = true;
     component.push_back(v);
     for (int u : adj[v]) {
@@ -54,7 +54,7 @@ void dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& 
     }
 }
 
-void kosaraju_list(int n, vector<list<int>>& adj) {
+void kosaraju_list(int n, vector<list<int>> &adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -90,19 +90,16 @@ void kosaraju_list(int n, vector<list<int>>& adj) {
 void handle_client_command(string command) {
     if (command == "Newgraph\n") {
         createNewGraph(adj);
-    }
-    else if (command == "Kosaraju\n") {
-        int n=adj.size()-1;
-        kosaraju_list(n,adj);
-    } 
-    else if (command == "Newedge\n") {
+    } else if (command == "Kosaraju\n") {
+        int n = adj.size() - 1;
+        kosaraju_list(n, adj);
+    } else if (command == "Newedge\n") {
         int u, v;
         cin >> u >> v;
         adj[u].push_back(v);
         cout << "New edge added between " << u << " and " << v << endl;
         fflush(stdout);
-    } 
-    else if (command == "Removeedge\n") {
+    } else if (command == "Removeedge\n") {
         int u, v;
         cin >> u >> v;
         auto it = find(adj[u].begin(), adj[u].end(), v);
@@ -111,18 +108,17 @@ void handle_client_command(string command) {
             cout << "Edge removed between " << u << " and " << v << endl;
             fflush(stdout);
         }
-    } 
-    else {
+    } else {
         cout << "Unknown command: " << command << endl;
         fflush(stdout);
-        }
+    }
 }
 
 void *get_in_addr(struct sockaddr *sa) {
     if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
+        return &(((struct sockaddr_in *)sa)->sin_addr);
     }
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+    return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
 // Return a listening socket
@@ -188,6 +184,7 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count) {
     pfds[i] = pfds[*fd_count - 1];
     (*fd_count)--;
 }
+
 int main(void) {
     int listener;
     int newfd;
@@ -226,17 +223,16 @@ int main(void) {
 
                     if (newfd == -1) {
                         perror("accept");
-                    } 
-                    else {
+                    } else {
                         add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
 
                         printf("pollserver: new connection from %s on socket %d\n",
                                inet_ntop(remoteaddr.ss_family,
                                          get_in_addr((struct sockaddr *)&remoteaddr),
-                                         remoteIP, INET6_ADDRSTRLEN),newfd);
+                                         remoteIP, INET6_ADDRSTRLEN),
+                               newfd);
                     }
-                } 
-                else {
+                } else {
                     int client_fd = pfds[i].fd;
 
                     int nbytes = recv(client_fd, buf, sizeof buf, 0);
@@ -244,15 +240,13 @@ int main(void) {
                     if (nbytes <= 0) {
                         if (nbytes == 0) {
                             printf("pollserver: socket %d hung up\n", client_fd);
-                        } 
-                        else {
+                        } else {
                             perror("recv");
                         }
 
                         close(client_fd);
                         del_from_pfds(pfds, i, &fd_count);
-                    } 
-                    else {
+                    } else {
                         buf[nbytes] = '\0';
                         string command(buf);
                         // Use dup2 to redirect stdin to the client's socket
