@@ -56,9 +56,10 @@ int get_listener_socket(void) {
 
 void* handle_client(int fd) {
     while (1) {
-        char buf[256];
+        char buf[256]; // will store incoming messages from client
         cout << "On Thread: Watiting to recv from fd: " << fd << endl;
         int nbytes = recv(fd, buf, sizeof buf, 0);
+
         if (nbytes < 0) {
             perror("recv");
             cout << "Exit Theard: Fd " << fd << endl;
@@ -70,17 +71,17 @@ void* handle_client(int fd) {
             // if has data send it to client handler, dup std in and out to client
             // so every message from him goes to function and from function to him
             buf[nbytes] = '\0';
-            string command(buf);
-            pthread_mutex_lock(&my_mutex);  // Lock the mutex before accessing counter
+            string command(buf); // Convert the C-string to a C++ string for easier handling
+            pthread_mutex_lock(&my_mutex);  // Lock the mutex before accessing shared resources.
             int res = dup2(fd, STDIN_FILENO);
             if (res == -1) {
                 perror("dup2");
                 close(fd);
             }
             cout << "On Thread: " << fd << " Locked: Mutex Locked" << endl;
-            string ans = kosaraju::handle_client_command(adj, command);
-            send(fd, ans.c_str(), ans.size(), 0);
-            pthread_mutex_unlock(&my_mutex);  // Unlock the mutex after access
+            string ans = kosaraju::handle_client_command(adj, command);  // Process the command and generate a response
+            send(fd, ans.c_str(), ans.size(), 0); // Send the response back to the client.
+            pthread_mutex_unlock(&my_mutex);  // Unlock the mutex.
             cout << "On Thread: " << fd << " UnLocked: Mutex Unlocked" << endl;
         }
     }
