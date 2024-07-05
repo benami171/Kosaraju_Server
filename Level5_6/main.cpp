@@ -1,9 +1,11 @@
-#include "Reactor.hpp"
-#include "kosaraju.hpp"
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
+#include <cstring>
+
+#include "../Kosaraju.hpp"
+#include "../Reactor.hpp"
 
 vector<list<int>> adj;
 
@@ -27,7 +29,7 @@ int get_listener_socket(void) {
     serverAddress.sin_addr.s_addr = INADDR_ANY;
     serverAddress.sin_port = htons(PORT);
 
-    int bindResult = ::bind(listeningSocket, (struct sockaddr *) &serverAddress, sizeof(serverAddress));
+    int bindResult = bind(listeningSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
     if (bindResult == -1) {
         perror("Bind failed with error code");
         close(listeningSocket);
@@ -40,7 +42,6 @@ int get_listener_socket(void) {
         close(listeningSocket);
         exit(1);
     }
-
     return listeningSocket;
 }
 
@@ -49,18 +50,18 @@ int get_listener_socket(void) {
  * @param fd
  * @return return pointer to created fd, if error occurred throw exception
  */
-void* handle_connection (int fd) {
+void* handle_connection(int fd) {
     // get connection and add to poll list
     struct sockaddr_in client_address;
     socklen_t clientAddressLen = sizeof(client_address);
     memset(&client_address, 0, sizeof(client_address));
     clientAddressLen = sizeof(client_address);
-    int client_fd = accept(fd, (struct sockaddr *) &client_address, &clientAddressLen);
+    int client_fd = accept(fd, (struct sockaddr*)&client_address, &clientAddressLen);
     if (client_fd == -1) {
         perror("accept");
-        throw exception();
+        return new int(-1);
     }
-    cout <<"client connected"<<endl;
+    cout << "client connected" << endl;
     return new int(client_fd);
 }
 
@@ -76,66 +77,55 @@ void* handle_client(int fd) {
     int nbytes = recv(fd, buf, sizeof buf, 0);
     if (nbytes < 0) {
         perror("recv");
-        throw exception();
-    }
-    else if (nbytes == 0) {
-        cout <<"client disconnected"<<endl;
-        throw exception();
-    }
-    else {
+        return new int(-1);
+    } else if (nbytes == 0) {
+        cout << "client disconnected" << endl;
+        return new int(-1);
+    } else {
         // if has data send it to client handler, dup std in and out to client
         // so every message from him goes to function and from function to him
         buf[nbytes] = '\0';
         string command(buf);
         int res = dup2(fd, STDIN_FILENO);
-//        int res1 = dup2(fd, STDOUT_FILENO);
         if (res == -1) {
             perror("dup2");
             close(fd);
         }
-        kosaraju::handle_client_command(adj, command);
+        string ans = Kosaraju::handle_client_command(adj, command);
+        send(fd, ans.c_str(), ans.size(), 0);  // Send the response back to the client.
     }
+    return new int (1);
 }
 
-
-int main(){
-
+int main() {
     int listener = get_listener_socket();
-    if(listener == -1){
+    if (listener == -1) {
         perror("socket");
         exit(1);
     }
 
     Reactor* reactor = startReactor();
-    addFdToReactor(reactor,listener,handle_connection);
-    while(reactor->run){
-        int poll_count = poll(reactor->pfds,reactor->fd_count,-1);
-        if(poll_count == -1){
+    addFdToReactor(reactor, listener, handle_connection);
+    while (reactor->run) {
+        int poll_count = poll(reactor->pfds, reactor->fd_count, -1);
+        if (poll_count == -1) {
             perror("poll");
         }
 
-        for(int i=0;i<reactor->fd_count;i++){
-            if(reactor->pfds[i].revents & POLLIN && reactor->pfds[i].fd!=-1){
+        for (int i = 0; i < reactor->fd_count; i++) {
+            if (reactor->pfds[i].revents & POLLIN && reactor->pfds[i].fd != -1) {
                 int hot_fd = reactor->pfds[i].fd;
-                if(listener == hot_fd){
-                    void* fd;
-                    try {
-                        fd = reactor->f2f[i].func(hot_fd);
-                    }
-                    catch (exception){
-                        // need to continue loop
-                        continue;
-                    }
+                    void* fd = reactor->f2f[i].func(hot_fd);
                     int fds = *(int*)fd;
                     free(fd);
-                    addFdToReactor(reactor,fds, handle_client);
-                }
-                else{
-                    try {
-                        reactor->f2f[i].func(hot_fd);
+                if (listener == hot_fd) {
+                    if (fds == -1) {
+                        continue;
                     }
-                    catch (exception){
-                        removeFdFromReactor(reactor,hot_fd);
+                    addFdToReactor(reactor, fds, handle_client);
+                } else {
+                    if (fds == -1) {
+                        removeFdFromReactor(reactor, hot_fd);
                     }
                 }
             }

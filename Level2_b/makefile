@@ -1,21 +1,21 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -pg -Wall
 
-all: kosaraju_list kosaraju_matrix
+all: Kosaraju_list Kosaraju_matrix
 
-kosaraju_list: kosaraju_list.cpp
-	$(CXX) $(CXXFLAGS) -o kosaraju_list kosaraju_list.cpp
+Kosaraju_list: Kosaraju_list.cpp
+	$(CXX) $(CXXFLAGS) -o Kosaraju_list Kosaraju_list.cpp
 
-kosaraju_matrix: kosaraju_matrix.cpp
-	$(CXX) $(CXXFLAGS) -o kosaraju_matrix kosaraju_matrix.cpp
+Kosaraju_matrix: Kosaraju_matrix.cpp
+	$(CXX) $(CXXFLAGS) -o Kosaraju_matrix Kosaraju_matrix.cpp
 
-profile_list: kosaraju_list
-	./kosaraju_list < input7.txt
-	gprof --brief kosaraju_list gmon.out > profile_list.txt
+profile_list: Kosaraju_list
+	./Kosaraju_list < input7.txt
+	gprof --brief Kosaraju_list gmon.out > profile_list.txt
 
-profile_matrix: kosaraju_matrix
-	./kosaraju_matrix < input7.txt
-	gprof --brief kosaraju_matrix gmon.out > profile_matrix.txt
+profile_matrix: Kosaraju_matrix
+	./Kosaraju_matrix < input7.txt
+	gprof --brief Kosaraju_matrix gmon.out > profile_matrix.txt
 
 clean:
-	rm -f kosaraju_list kosaraju_matrix gmon.out profile_list.txt profile_matrix.txt
+	rm -f Kosaraju_list Kosaraju_matrix gmon.out profile_list.txt profile_matrix.txt

@@ -5,13 +5,10 @@ CC = g++
 CFLAGS = -std=c++11 -Wall -g
 
 # Libraries
-LIBS = -lpthread
+LIBS = -lpthread -lProactor -lReactor -lKosaraju
 
 # Source files
-SRCS = main.cpp kosaraju.cpp
-
-# Header files
-HEADERS = Proactor.hpp Reactor.hpp kosaraju.hpp
+SRCS = main.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
@@ -23,10 +20,10 @@ EXEC = main
 all: $(EXEC)
 
 $(EXEC): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(EXEC) $(LIBS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(EXEC) -L.. $(LIBS)
 
 # Pattern rule for object files
-%.o: %.cpp $(HEADERS)
+%.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

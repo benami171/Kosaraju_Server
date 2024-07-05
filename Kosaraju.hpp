@@ -6,9 +6,9 @@
 
 using namespace std;
 
-namespace kosaraju {
+namespace Kosaraju {
         
-    void waitForAbove50Signal();
+    void* waitForAbove50Signal(int);
 
     string createNewGraph(vector<list<int>> &adj);
 
@@ -16,7 +16,7 @@ namespace kosaraju {
 
     void dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& component);
 
-    string kosaraju_list(int n, vector<list<int>>& adj);
+    string Kosaraju_list(int n, vector<list<int>>& adj);
 
     string handle_client_command(vector<list<int>>& adj,string command);
 }

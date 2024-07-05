@@ -2,6 +2,7 @@
 #include <vector>
 #include <stack>
 #include <list>
+#include <algorithm>
 using namespace std;
 
 void dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
@@ -24,7 +25,7 @@ void dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& 
     }
 }
 
-void kosaraju_list(int n, vector<list<int>>& adj) {
+void Kosaraju_list(int n, vector<list<int>>& adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -58,15 +59,39 @@ void kosaraju_list(int n, vector<list<int>>& adj) {
 }
 
 int main() {
-    int n, m;
-    cin >> n >> m;
-    vector<list<int>> adj(n + 1);
-    for (int i = 0; i < m; ++i) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
+    string command;
+    int n = 0, m = 0;
+    vector<list<int>> adj;
+
+    while (cin >> command) {
+        if (command == "Newgraph") {
+            cin >> n >> m;
+            adj.assign(n + 1, list<int>());
+            for (int i = 0; i < m; ++i) {
+                int u, v;
+                cin >> u >> v;
+                adj[u].push_back(v);
+            }
+        } 
+        else if (command == "Kosaraju") {
+            Kosaraju_list(n, adj);
+        } 
+        else if (command == "Newedge") {
+            int u, v;
+            cin >> u >> v;
+            adj[u].push_back(v);  // Adjusted index to 0-based
+        } 
+        else if (command == "Removeedge") {
+            int u, v;
+            cin >> u >> v;
+            // Find and erase the edge
+            auto it = find(adj[u].begin(), adj[u].end(), v);
+            if (it != adj[u].end()) {
+                adj[u].erase(it);
+            }
+        }
+        else cout << "Unknown command: " << command << endl;
     }
 
-    kosaraju_list(n, adj);
     return 0;
 }

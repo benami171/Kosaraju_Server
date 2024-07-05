@@ -5,9 +5,9 @@
 #include <unistd.h>
 #include <mutex>
 
-#include "Proactor.hpp"
-#include "Reactor.hpp"
-#include "kosaraju.hpp"
+#include "../Proactor.hpp"
+#include "../Reactor.hpp"
+#include "../Kosaraju.hpp"
 
 // The Graph that the Reactor holds
 vector<list<int>> adj;
@@ -54,7 +54,7 @@ int get_listener_socket(void) {
 void* handle_client(int fd) {
     while (1) {
         char buf[256];
-        cout << "On Thread: Watiting to recv from fd: " << fd << endl;
+        
         int nbytes = recv(fd, buf, sizeof buf, 0);
         if (nbytes < 0) {
             perror("recv");
@@ -74,10 +74,11 @@ void* handle_client(int fd) {
                 perror("dup2");
                 close(fd);
             }
-            cout << "On Thread: " << fd << " Locked: Mutex Locked" << endl;
-            kosaraju::handle_client_command(adj, command);
+            
+            string ans = Kosaraju::handle_client_command(adj, command);
+            send(fd, ans.c_str(), ans.size(), 0); // Send the response back to the client.
             pthread_mutex_unlock(&my_mutex);  // Unlock the mutex after access
-            cout << "On Thread: " << fd << " UnLocked: Mutex Unlocked" << endl;
+            
         }
     }
     return nullptr;
@@ -107,8 +108,6 @@ void* handle_connection(int fd) {
 }
 
 int main() {
-
-
     pthread_mutex_init(&my_mutex, NULL);  // Initialize the mutex
 
     int listener = get_listener_socket();
@@ -135,17 +134,8 @@ int main() {
                     free(fds);
                     if (res == -1) {
                         continue;
-                    } else {
-                        //                        addFdToReactor(reactor,res, handle_client);
                     }
                 }
-                //                else{
-                //                    void* ret = reactor->f2f[i].func(hot_fd);
-                //                    if(*(int*)ret == -1) {
-                //                        removeFdFromReactor(reactor, hot_fd);
-                //                    }
-                //
-                //                }
             }
         }
     }

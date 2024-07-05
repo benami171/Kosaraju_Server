@@ -1,26 +1,8 @@
-#include <map>
-#include <poll.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <iostream>
-#include <pthread.h>
-#include <signal.h>
+#include "Proactor.hpp"
 
 using namespace std;
 
-typedef void * (* proactorFunc) (int sockfd);
-
-// Struct to hold the original function and its argument
-typedef struct {
-    proactorFunc func;
-    int sockfd;
-} ThreadData;
-
-// Wrapper function
+// Wrapper function.
 void* thread_wrapper(void* arg) {
     ThreadData* data = (ThreadData*)arg;
     void* result = data->func(data->sockfd);
@@ -45,7 +27,6 @@ pthread_t startProactor(int sockfd, proactorFunc threadFunc) {
         free(data);
         return (pthread_t) 0;  // Return an invalid thread ID on error
     }
-
     return thread;
 }
 

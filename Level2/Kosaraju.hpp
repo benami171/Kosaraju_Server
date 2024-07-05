@@ -7,7 +7,7 @@
 #include <deque>
 #include <list>
 
-void kosaraju_list(int n, std::vector<std::vector<int>>& adj);
-void kosaraju_deque(int n, std::vector<std::vector<int>>& adj);
+void Kosaraju_list(int n, std::vector<std::vector<int>>& adj);
+void Kosaraju_deque(int n, std::vector<std::vector<int>>& adj);
 
 #endif

@@ -6,9 +6,9 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
-#include "Proactor.hpp"
-#include "Reactor.hpp"
-#include "kosaraju.hpp"
+#include "../Proactor.hpp"
+#include "../Reactor.hpp"
+#include "../Kosaraju.hpp"
 
 // The Graph that the Reactor holds
 vector<list<int>> adj;
@@ -55,7 +55,6 @@ int get_listener_socket(void) {
 void* handle_client(int fd) {
     while (1) {
         char buf[256]; // will store incoming messages from client
-        cout << "On Thread: Watiting to recv from fd: " << fd << endl;
         int nbytes = recv(fd, buf, sizeof buf, 0);
 
         if (nbytes < 0) {
@@ -76,11 +75,11 @@ void* handle_client(int fd) {
                 perror("dup2");
                 close(fd);
             }
-            cout << "On Thread: " << fd << " Locked: Mutex Locked" << endl;
-            string ans = kosaraju::handle_client_command(adj, command);  // Process the command and generate a response
+           
+            string ans = Kosaraju::handle_client_command(adj, command);  // Process the command and generate a response
             send(fd, ans.c_str(), ans.size(), 0); // Send the response back to the client.
             pthread_mutex_unlock(&my_mutex);  // Unlock the mutex.
-            cout << "On Thread: " << fd << " UnLocked: Mutex Unlocked" << endl;
+        
         }
     }
     return nullptr;
@@ -110,7 +109,8 @@ void* handle_connection(int fd) {
 }
 
 int main() {
-    std::thread signalThread(kosaraju::waitForAbove50Signal); 
+
+    startProactor(1,Kosaraju::waitForAbove50Signal);
     pthread_mutex_init(&my_mutex, NULL);  // Initialize the mutex
 
     int listener = get_listener_socket();

@@ -1,4 +1,4 @@
-#include "kosaraju.hpp"
+#include "Kosaraju.hpp"
 
 using namespace std;
 
@@ -22,7 +22,7 @@ void dfs2_list(int v, vector<vector<int>>& adj, vector<bool>& visited, list<int>
     }
 }
 
-void kosaraju_list(int n, vector<vector<int>>& adj) {
+void Kosaraju_list(int n, vector<vector<int>>& adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -67,7 +67,7 @@ int main() {
         adj[u].push_back(v);
     }
 
-    kosaraju_list(n, adj);
+    Kosaraju_list(n, adj);
 
     return 0;
 }

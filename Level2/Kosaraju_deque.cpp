@@ -1,4 +1,4 @@
-#include "kosaraju.hpp"
+#include "Kosaraju.hpp"
 
 using namespace std;
 
@@ -22,7 +22,7 @@ void dfs2_deque(int v, vector<vector<int>>& adj, vector<bool>& visited, deque<in
     }
 }
 
-void kosaraju_deque(int n, vector<vector<int>>& adj) {
+void Kosaraju_deque(int n, vector<vector<int>>& adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -67,7 +67,7 @@ int main() {
         adj[u].push_back(v);
     }
 
-    kosaraju_deque(n, adj);
+    Kosaraju_deque(n, adj);
 
     return 0;
 }

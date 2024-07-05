@@ -54,7 +54,7 @@ void dfs2_list(int v, vector<list<int>> &adj, vector<bool> &visited, list<int> &
     }
 }
 
-void kosaraju_list(int n, vector<list<int>> &adj) {
+void Kosaraju_list(int n, vector<list<int>> &adj) {
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
 
@@ -92,7 +92,7 @@ void handle_client_command(string command) {
         createNewGraph(adj);
     } else if (command == "Kosaraju\n") {
         int n = adj.size() - 1;
-        kosaraju_list(n, adj);
+        Kosaraju_list(n, adj);
     } else if (command == "Newedge\n") {
         int u, v;
         cin >> u >> v;

@@ -1,7 +1,5 @@
-#include "kosaraju.hpp"
-
+#include "Kosaraju.hpp"
 #include <stdio.h>
-
 #include <algorithm>
 #include <condition_variable>
 #include <iostream>
@@ -15,7 +13,7 @@ pthread_cond_t cv_above50 = PTHREAD_COND_INITIALIZER;  // Condition variable for
 bool current_above50_state = false;
 
 
-void kosaraju::waitForAbove50Signal() {
+void* Kosaraju::waitForAbove50Signal(int) {
     pthread_mutex_lock(&mtx);
     while (true) {
         pthread_cond_wait(&cv_above50, &mtx);
@@ -30,7 +28,7 @@ void kosaraju::waitForAbove50Signal() {
     pthread_mutex_unlock(&mtx);
 }
 
-string kosaraju::createNewGraph(vector<list<int>>& adj) {
+string Kosaraju::createNewGraph(vector<list<int>>& adj) {
     string ans;
     int n, m;
     ans += "define graph\n";
@@ -38,7 +36,6 @@ string kosaraju::createNewGraph(vector<list<int>>& adj) {
     adj.assign(n + 1, list<int>());
     for (int i = 0; i < m; ++i) {
         int u, v;
-        ans += "addEdge\n";
         cin >> u >> v;
         adj[u].push_back(v);
     }
@@ -46,7 +43,7 @@ string kosaraju::createNewGraph(vector<list<int>>& adj) {
     return ans;
 }
 
-void kosaraju::dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
+void Kosaraju::dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<int>& Stack) {
     visited[v] = true;
     for (int u : adj[v]) {
         if (!visited[u]) {
@@ -56,7 +53,7 @@ void kosaraju::dfs1(int v, vector<list<int>>& adj, vector<bool>& visited, stack<
     Stack.push(v);
 }
 
-void kosaraju::dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& component) {
+void Kosaraju::dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, list<int>& component) {
     visited[v] = true;
     component.push_back(v);
     for (int u : adj[v]) {
@@ -66,7 +63,7 @@ void kosaraju::dfs2_list(int v, vector<list<int>>& adj, vector<bool>& visited, l
     }
 }
 
-string kosaraju::kosaraju_list(int n, vector<list<int>>& adj) {
+string Kosaraju::Kosaraju_list(int n, vector<list<int>>& adj) {
     string ans;
     stack<int> Stack;
     vector<bool> visited(n + 1, false);
@@ -112,14 +109,14 @@ string kosaraju::kosaraju_list(int n, vector<list<int>>& adj) {
     return ans;
 }
 
-string kosaraju::handle_client_command(vector<list<int>>& adj, string command) {
+string Kosaraju::handle_client_command(vector<list<int>>& adj, string command) {
     string ans;
     if (command == "Newgraph\n") {
         ans += "Creating new graph\n";
         ans += createNewGraph(adj);
     } else if (command == "Kosaraju\n") {
         int n = adj.size() - 1;
-        ans = kosaraju_list(n, adj);
+        ans = Kosaraju_list(n, adj);
     } else if (command == "Newedge\n") {
         int u, v;
         cin >> u >> v;
