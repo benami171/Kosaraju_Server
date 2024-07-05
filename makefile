@@ -5,14 +5,14 @@ CC = g++
 CFLAGS = -std=c++11 -Wall -g
 
 all: libProactor libReactor libKosaraju
-	make -C Level1 all
-	make -C Level2 all
-	make -C Level2_b all
-	make -C Level3 all
-	make -C Level4 all
-	make -C Level5_6 all
-	make -C Level7_8_9 all
-	make -C Level10 all
+	make -C Level_01 all
+	make -C Level_02 all
+	make -C Level_02b all
+	make -C Level_03 all
+	make -C Level_04 all
+	make -C Level_05_06 all
+	make -C Level_07_08_09 all
+	make -C Level_10 all
 
 libReactor: Reactor.o
 	ar rcs libReactor.a Reactor.o
@@ -34,13 +34,13 @@ Proactor.o: Proactor.cpp
 
 clean: 
 	rm *.o *.a
-	make -C Level1 clean
-	make -C Level2 clean
-	make -C Level2_b clean
-	make -C Level3 clean
-	make -C Level4 clean
-	make -C Level5_6 clean
-	make -C Level7_8_9 clean
-	make -C Level10 clean
+	make -C Level_01 clean
+	make -C Level_02 clean
+	make -C Level_02b clean
+	make -C Level_03 clean
+	make -C Level_04 clean
+	make -C Level_05_06 clean
+	make -C Level_07_08_09 clean
+	make -C Level_10 clean
 
-.PHONY: clean Level1 Level2 Level2_b Level3 Level4 Level5_6 Level7_8_9 Level10
+.PHONY: clean Level_01 Level_02 Level_02b Level_03 Level_04 Level_05_06 Level_07_08_09 Level_10
