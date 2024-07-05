@@ -3,11 +3,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
 #include <condition_variable>
 #include <mutex>
 #include <thread>
-
 #include "Proactor.hpp"
 #include "Reactor.hpp"
 #include "kosaraju.hpp"
@@ -112,7 +110,7 @@ void* handle_connection(int fd) {
 }
 
 int main() {
-    std::thread signalThread(kosaraju::waitForAbove50Signal);
+    std::thread signalThread(kosaraju::waitForAbove50Signal); 
     pthread_mutex_init(&my_mutex, NULL);  // Initialize the mutex
 
     int listener = get_listener_socket();
